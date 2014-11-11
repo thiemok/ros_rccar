@@ -4,7 +4,7 @@ project(rccar_drive)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs tf)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -76,9 +76,9 @@ find_package(catkin REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+	INCLUDE_DIRS include
 #  LIBRARIES rccar_drive
-#  CATKIN_DEPENDS other_catkin_pkg
+	CATKIN_DEPENDS geometry_msgs roscpp tf
 #  DEPENDS system_lib
 )
 
@@ -88,7 +88,10 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include
+	src 
+  ${catkin_INCLUDE_DIRS}
+)
 
 ## Declare a cpp library
 # add_library(rccar_drive
@@ -96,16 +99,16 @@ catkin_package(
 # )
 
 ## Declare a cpp executable
-# add_executable(rccar_drive_node src/rccar_drive_node.cpp)
+add_executable(rccar_drive_node src/rccar_drive_node.cpp src/chroma_rpi_servoboard.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(rccar_drive_node rccar_drive_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(rccar_drive_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(rccar_drive_node
+	${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
