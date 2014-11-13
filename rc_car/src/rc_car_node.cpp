@@ -27,13 +27,16 @@ SOFTWARE.
 
 RcCar::RcCar() 
 {
-	//TODO replace this with parameterized initialisation
-	this->engineID = 0;
-	this->steeringServoID = 1;
-	this->steeringServoRightLimit = 775;
-	this->steeringServoLeftLimit = 475;
-	this->reversingTimeout = ros::Duration(5.0);
-	//TODO
+	/* Initialisation from launch file */
+	ros::NodeHandle privateNodeHandle("~");
+	privateNodeHandle.param<int>("engine_id", this->engineID, 0);
+	privateNodeHandle.param<int>("steering_servo_id", this->steeringServoID, 1);
+	privateNodeHandle.param<int>("steering_servo_right_limit", this->steeringServoRightLimit, 200);
+	privateNodeHandle.param<int>("steering_servo_left_limit", this->steeringServoLeftLimit, 200);
+	double t;
+	privateNodeHandle.param<double>("reversing_timeout", t, 5.0);
+	this->reversingTimeout = ros::Duration(t);
+
 
 	/* Set current command to 0 */
 	this->currentCMD.linear.x = 0;
@@ -165,7 +168,7 @@ void RcCar::velocityCallback(const geometry_msgs::Twist& msg) {
 
 void RcCar::printUsageMessage(void)
 {
-	ROS_INFO("*** Usage of sample node ***\nTo use this node...");
+	ROS_INFO("*** Usage of rc car node ***\nTo use this node configure your cars parameters in the provided launch file.");
 }
 
 /**
