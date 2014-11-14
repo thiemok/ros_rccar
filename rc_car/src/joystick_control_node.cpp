@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include "joystick_control_node.h"
+#include "rc_car/joystick_control_node.h"
 
 #define GEAR_HI 1
 #define GEAR_LOW 0

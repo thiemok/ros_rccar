@@ -29,7 +29,7 @@ SOFTWARE.
  * Some code taken from http://electronics.chroma.se/servo.c
  */
 
-#include "chroma_rpi_servoboard.h"
+#include "rc_car/chroma_rpi_servoboard.h"
 
 #define uint unsigned int
 

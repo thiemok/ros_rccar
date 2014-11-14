@@ -23,7 +23,7 @@ SOFTWARE.
 */
 #define RC_CAR_VEL_CMD_CHANNEL "/rc_car/cmd_vel"
 
-#include "rc_car_node.h"
+#include "rc_car/rc_car_node.h"
 
 RcCar::RcCar() 
 {

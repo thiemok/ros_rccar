@@ -26,7 +26,7 @@ SOFTWARE.
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <math.h>
-#include "chroma_rpi_servoboard.h"
+#include "rc_car/chroma_rpi_servoboard.h"
 
 /**
  * This node controls the rc car.
