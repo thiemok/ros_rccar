@@ -4,10 +4,10 @@ project(rc_car)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs tf)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs tf sensor_msgs)
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+#find_package(Boost REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -78,7 +78,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs tf)
 catkin_package(
 	INCLUDE_DIRS include
 #  LIBRARIES rccar_drive
-	CATKIN_DEPENDS geometry_msgs roscpp tf
+	CATKIN_DEPENDS geometry_msgs roscpp tf sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -100,6 +100,7 @@ include_directories(include
 
 ## Declare a cpp executable
 add_executable(rc_car_node src/rc_car_node.cpp src/chroma_rpi_servoboard.cpp)
+add_executable(joystick_control_node src/joystick_control_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -109,6 +110,7 @@ add_executable(rc_car_node src/rc_car_node.cpp src/chroma_rpi_servoboard.cpp)
 target_link_libraries(rc_car_node
 	${catkin_LIBRARIES}
 )
+target_link_libraries(joystick_control_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##

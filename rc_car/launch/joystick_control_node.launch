@@ -1,0 +1,15 @@
+<launch>
+  <node name="joy_node" pkg="joy" type="joy_node">
+  	<param name="autorepeat_rate" value="20"/>
+  </node>
+
+  <node name="joystick_control_node" pkg="rc_car" type="joystick_control_node">
+    <param name="throttle_axis" value="2"/>
+    <param name="brake_axis" value="5" />
+    <param name="gear_switch_button" value="0" /> 
+    <param name="direction_switch_button" value="1" />   
+    <param name="steering_axis" value="0" />
+    <param name="HI_gear_mod" value="1.0" />
+    <param name="LOW_gear_mod" value="0.3" />
+  </node>
+</launch>

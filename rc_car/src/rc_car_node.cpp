@@ -64,21 +64,29 @@ RcCar::~RcCar()
 
 void RcCar::mainNodeLoop() 
 {
-	/* set the loop rate (in hertz) */
-	ros::Rate loop_rate(25);
+
+	/* ******************************************
+	 * Sleep till new messages arrives
+	 * ******************************************/
+    ros::spin();
+
+	///* set the loop rate (in hertz) */
+	//ros::Rate loop_rate(25);
+	//
+	//while (ros::ok()) {
+	//
+	//	/* do your node business here */
+	//	steer(currentCMD.angular.z);
+	//	setEngine(currentCMD.linear.x, currentCMD.linear.y);
+	//
+	//	/* spin the node once */
+	//	ros::spinOnce();
+	//
+	//	/* go to sleep for the rest of the node's processing period */
+	//	loop_rate.sleep();
+	//	
+	//}
 	
-	while (ros::ok()) {
-	
-		/* do your node business here */
-		steer(currentCMD.angular.z);
-		setEngine(currentCMD.linear.x, currentCMD.linear.y);
-	
-		/* spin the node once */
-		ros::spinOnce();
-	
-		/* go to sleep for the rest of the node's processing period */
-		loop_rate.sleep();
-	}
 }
 
 /**
@@ -164,6 +172,9 @@ void RcCar::setEngine(double throttle, double brake) {
  */
 void RcCar::velocityCallback(const geometry_msgs::Twist& msg) {
 	currentCMD = msg;
+
+	steer(currentCMD.angular.z);
+	setEngine(currentCMD.linear.x, currentCMD.linear.y);
 }
 
 void RcCar::printUsageMessage(void)
