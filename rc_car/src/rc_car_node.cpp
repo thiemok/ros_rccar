@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#define RC_CAR_VEL_CMD_CHANNEL "rc_car/cmd_vel"
+#define RC_CAR_VEL_CMD_CHANNEL "/rc_car/cmd_vel"
 
 #include "rc_car_node.h"
 
@@ -192,7 +192,7 @@ void RcCar::printUsageMessage(void)
 int main(int argc, char** argv) {
 	
 	// Register node in the ros environment
-	ros::init(argc, argv, "Rc Car");
+	ros::init(argc, argv, "rc_car");
 
 	RcCar instance;
 	instance.printUsageMessage();
