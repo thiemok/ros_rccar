@@ -47,7 +47,6 @@ void ServoBoard::changeBps(int bps) {
 
 	/* Get the current options for the port */
 	tcgetattr(fd, &options);
-
 	/* Set baud rates */
 	switch(bps) {
 		case 0:
@@ -100,7 +99,7 @@ int ServoBoard::checkPositionRange(int pos) {
 	} else {
 		p = pos;
 	}
-	return pos;
+	return p;
 }
 
 /**
@@ -118,54 +117,60 @@ int ServoBoard::checkPositionWithExtendedRange(int pos) {
 	} else {
 		p = pos;
 	}
-	return pos;
+	return p;
 }
 
 /**
  * Initialises the interface with the given serial port
  * @param port The serial port that should be used
- * Returns: -1 if initialisation fails
  */
 ServoBoard::ServoBoard(std::string port) {
-	char cport[80];
-	strcpy(cport, port.c_str());
-
-	fd = open(cport, O_RDWR | O_NOCTTY | O_NDELAY);
-
-	/* Check if port could be opened */
-	if (fd== -1) {
-		char err[80];
-		strcpy(err, "Init Servo Board: Unable to open ");
-		strcat(err, cport);
-		perror(err);
-	} else {
-		fcntl(fd, F_SETFL, 0);
-
-		/* Set baud raute to boards default */
-		changeBps(0);
-	}
+	init(port);
 }
 
 /**
  * Initialises the interface with the rpi's default serial port /dev/ttyAMA0
- * Returns: -1 if initialisation fails
  */
 ServoBoard::ServoBoard() {
-	ServoBoard(RPI_DEFAULT_SERIAL_PORT);
+	init(RPI_DEFAULT_SERIAL_PORT);
 }
 
 /**
  * Deinitialises the interface
  */
 ServoBoard::~ServoBoard() {
- 	write(fd, "sbr 0\r", 6);
+ 	changeBps(0);
+ 	close(fd);
+}
+
+/**
+ * The actually initialising function. Is called by the constructor.
+ * @param port The serial port that should be used.
+ */
+void ServoBoard::init(std::string port) {
+	char cport[80];
+	strcpy(cport, port.c_str());
+
+	this->fd = open(cport, O_RDWR | O_NOCTTY | O_NDELAY);
+
+	/* Check if port could be opened */
+	if (fd == -1) {
+		char err[80];
+		strcpy(err, "Init Servo Board: Unable to open ");
+		strcat(err, cport);
+		perror(err);
+	} else {
+		fcntl(fd, F_SETFL, 0);
+		/* Set baud raute to boards default */
+		changeBps(0);
+	}	
 }
 
 /**
  * Tests the servos by slowly moving them between -100% and 100%
  */
 void ServoBoard::servoTest() {
-	write(fd, "st\r", 3);
+	int i = write(fd, "st\r", 3);
 }
 
  /**
@@ -242,7 +247,6 @@ void ServoBoard::setAllPosition(int servo0, int servo1, int servo2, int servo3,
  * @param rangeOverride Specifies if the extended position range should be used
  */
 void ServoBoard::setServo(uint servo, int pos, uint speed, bool rangeOverride) {
-
 	uint s;
 	int p;
 

@@ -46,13 +46,11 @@ class ServoBoard {
 		/**
 		 * Initialises the interface with the given serial port
 		 * @param port The serial port that should be used
-		 * Returns: -1 if initialisation fails
 		 */
 		ServoBoard(std::string port);
 
 		/**
 		 * Initialises the interface with the rpi's default serial port /dev/ttyAMA0
-		 * Returns: -1 if initialisation fails
 		 */
 		ServoBoard();
 
@@ -133,6 +131,12 @@ class ServoBoard {
 		 * File descriptor for the serial port
 		 */
 		int fd;
+
+		/**
+		 * The actually initialising function. Is called by the constructor.
+		 * @param port The serial port that should be used.
+		 */
+		void init(std::string port);
 
 		/**
 		 * Checks if the velocity is between 0 and 255, if its greater 0 (as fast as possible)

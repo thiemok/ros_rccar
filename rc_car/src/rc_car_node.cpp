@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#define RC_CAR_VEL_CMD_CHANNEL "/rc_car/cmd_vel"
+#define RC_CAR_VEL_CMD_CHANNEL "rc_car/cmd_vel"
 
 #include "rc_car/rc_car_node.h"
 
@@ -68,24 +68,24 @@ void RcCar::mainNodeLoop()
 	/* ******************************************
 	 * Sleep till new messages arrives
 	 * ******************************************/
-    ros::spin();
+    //ros::spin();
 
-	///* set the loop rate (in hertz) */
-	//ros::Rate loop_rate(25);
-	//
-	//while (ros::ok()) {
-	//
-	//	/* do your node business here */
-	//	steer(currentCMD.angular.z);
-	//	setEngine(currentCMD.linear.x, currentCMD.linear.y);
-	//
-	//	/* spin the node once */
-	//	ros::spinOnce();
-	//
-	//	/* go to sleep for the rest of the node's processing period */
-	//	loop_rate.sleep();
-	//	
-	//}
+	/* set the loop rate (in hertz) */
+	ros::Rate loop_rate(25);
+	
+	while (ros::ok()) {
+	
+		/* do your node business here */
+		steer(currentCMD.angular.z);
+		setEngine(currentCMD.linear.x, currentCMD.linear.y);
+	
+		/* spin the node once */
+		ros::spinOnce();
+	
+		/* go to sleep for the rest of the node's processing period */
+		loop_rate.sleep();
+		
+	}
 	
 }
 
@@ -107,8 +107,13 @@ void RcCar::steer(double angle) {
  * @param brake The brake, which should be applied. Will override throttle
  */
 void RcCar::setEngine(double throttle, double brake) {
-
+	//TODO
+	//fix following things
+	//Braking from neutral reverses
+	//Forward from neutral after reversing invokes reversing timeout and requires steadily pushed throttle
+	//Switching to reverse requires neutral throttle after reversing timeout is elapsed.
 	double b = brake;
+
 
 	/* Check if breake value is not positive */
 	if (b < 0) {
@@ -133,14 +138,14 @@ void RcCar::setEngine(double throttle, double brake) {
 		if (throttle >= 0 && !inReverse) { /* move forward */
 			/* Check if brake was applied priviously */
 			if(brakePushedAt != ros::Time(0.0)) {
-				brakePushedAt == ros::Time(0.0);
+				brakePushedAt = ros::Time(0.0);
 			}
 			/* Apply throttle */
 			motorController->setServo(engineID, 1000 * fmin(throttle, 1), 0, false);
 		} else if (throttle <= 0 && inReverse) { /* reversing */
 			/* Check if brake was applied priviously */
 			if(brakePushedAt != ros::Time(0.0)) {
-				brakePushedAt == ros::Time(0.0);
+				brakePushedAt = ros::Time(0.0);
 			}
 			/* Apply throttle */
 			motorController->setServo(engineID, 1000 * fmax(throttle, -1), 0, false);
@@ -150,14 +155,17 @@ void RcCar::setEngine(double throttle, double brake) {
 				setEngine(0, 1);
 			} else {
 				inReverse = true;
+				/* Set engine to 0 to invoke the esc's direction switch mechanism */
+				setEngine(0, 0);
 				setEngine(throttle, 0);
 			} 
 		} else if (throttle > 0 && inReverse) { /* staring to move forward from reversing */
-			/* Check if brake was applied before and applie reversing timeout proactivly if not to protect the gearbox */
+			/* Check if brake was applied before and apply reversing timeout proactivly if not to protect the gearbox */
 			if (brakePushedAt == ros::Time(0.0) || (ros::Time::now() - brakePushedAt) < reversingTimeout) {
-				setEngine(0.1, 0);
+				setEngine(0, 0.01);
 			} else {
 				inReverse = false;
+				//setEngine(0, 0);
 				setEngine(throttle, 0);
 			} 
 		}
@@ -173,8 +181,8 @@ void RcCar::setEngine(double throttle, double brake) {
 void RcCar::velocityCallback(const geometry_msgs::Twist& msg) {
 	currentCMD = msg;
 
-	steer(currentCMD.angular.z);
-	setEngine(currentCMD.linear.x, currentCMD.linear.y);
+	//steer(currentCMD.angular.z);
+	//setEngine(currentCMD.linear.x, currentCMD.linear.y);
 }
 
 void RcCar::printUsageMessage(void)
