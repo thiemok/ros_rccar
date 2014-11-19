@@ -27,6 +27,7 @@ SOFTWARE.
 #include <geometry_msgs/Twist.h>
 #include <math.h>
 #include "rc_car/chroma_rpi_servoboard.h"
+#include <unistd.h>
 
 /**
  * This node controls the rc car.
@@ -60,12 +61,21 @@ public:
 private:
 
 	/**
+	 * Displays state of the engine
+	 */
+	enum engineState {
+	 	state_FORWARD,
+	 	state_NEUTRAL,
+	 	state_REVERSE
+	 };
+
+	/**
 	 * The controller that is used to control the motors
 	 */
-	 ServoBoard* motorController;
+	ServoBoard* motorController;
 
 	/** The node handle **/
-	 ros::NodeHandle nodeHandle;
+	ros::NodeHandle nodeHandle;
 
 	/** The subscriber for velocity messages**/
 	ros::Subscriber velocitySub;
@@ -88,8 +98,8 @@ private:
 	/** The currently active command **/
 	geometry_msgs::Twist currentCMD;
 
-	/** The cars current driving direction **/
-	bool inReverse;
+	/** The cars current driving state **/
+	RcCar::engineState currentEngineState;
 
 	/** Time at which braking was executed, will be 0 if not breaking **/
 	ros::Time brakePushedAt;
@@ -116,11 +126,14 @@ private:
 	void velocityCallback(const geometry_msgs::Twist& msg);
 
 	/**
-	 * The FooBar Service callback.
-	 *
-	 * @param req
-	 * @param resp
-	 * @return
+	 * Manages the brake timestamp.
+	 * @param braking Flag if the brake has is active.
 	 */
-	// bool serviceCallback(ClassName::FooBar::Request &req, ClassName::FooBar::Response &resp)
+	void manageBrakeTimer(bool braking);
+
+	/**
+	 * Checks if the reversing timeout is elapsed.
+	 * @return true if the reversing timeout is elapsed, false if not.
+	 */
+	bool checkReversingTimeout();
 };

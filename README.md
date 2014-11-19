@@ -5,10 +5,6 @@ An RC Car based on ROS indigo and the Raspberry Pi.
 The Project uses the Raspberry Pi Servo board v3, which is available here http://electronics.chroma.se/
 
 Currently driving is possible via ros *geometry_msgs/Twist* to *rc_car/cmd_vel* or via joystick using *joystick_control_node*.  
-**The throttle is currently a bit broken, mind the following things when driving**  
-Braking from neutral reverses  
-Forward from neutral after reversing invokes reversing timeout and requires steadily pushed throttle  
-Switching to reverse requires neutral throttle after reversing timeout is elapsed.  
 
 ### Control via rc_car/cmd_vel
 Use linear.x for throttle (to drive in reverse use negative values), linear.y is used for braking and angular.z for steering.
