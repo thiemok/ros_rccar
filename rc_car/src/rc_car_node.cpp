@@ -36,6 +36,9 @@ RcCar::RcCar()
 	double t;
 	privateNodeHandle.param<double>("reversing_timeout", t, 5.0);
 	this->reversingTimeout = ros::Duration(t);
+	privateNodeHandle.param<double>("esc_reverse_mode_timeout", t, 1.0);
+	this->reverseSwitchTimer = nodeHandle.createTimer(ros::Duration(t), &RcCar::switchToReverseTimerCallback,
+													  this, true, false);
 
 
 	/* Set current command to 0 */
@@ -48,6 +51,7 @@ RcCar::RcCar()
 
 	/* Init Servo Board */
 	this->motorController = new ServoBoard();
+	this->motorController->changeBps(2);
 
 	/* Subscribe to cmd msgs */
 	this->velocitySub = nodeHandle.subscribe(RC_CAR_VEL_CMD_CHANNEL, 1, &RcCar::velocityCallback, this);
@@ -55,6 +59,7 @@ RcCar::RcCar()
 	/* Set default values for variables */
 	this->currentEngineState = state_NEUTRAL;
 	this->brakePushedAt = ros::Time(0.0);
+	this->lockEngine = false;
 }
 
 RcCar::~RcCar() 
@@ -94,11 +99,12 @@ void RcCar::mainNodeLoop()
  * @param angle The steering angle in percent of the full lock. Positive values are interpreted as right.
  */
 void RcCar::steer(double angle) {
+
 	if (angle >= 0) {
-		motorController->setServo(steeringServoID, steeringServoRightLimit * fmin(angle, 1), 0, false);
-	} else {
-		motorController->setServo(steeringServoID, steeringServoLeftLimit * fmax(angle, -1), 0, false);
-	}
+			motorController->setServo(steeringServoID, steeringServoRightLimit * fmax(angle, -1), 0, false);
+		} else {
+			motorController->setServo(steeringServoID, steeringServoLeftLimit * fmin(angle, 1), 0, false);
+		}
 }
 
 /**
@@ -126,101 +132,113 @@ bool RcCar::checkReversingTimeout() {
 }
 
 /**
+ * Switches the ESC to Reverse Mode
+ * @param e The Timer event.
+ */
+void RcCar::switchToReverseTimerCallback(const ros::TimerEvent& e) {
+	motorController->setServo(engineID, currentCMD.linear.x * 1000, 0, false);
+	currentEngineState=state_REVERSE;
+	lockEngine = false;
+}
+
+/**
  * Sets the engine with the given throttle or brake.
  * @param throttle The throttle, which should be applied to the engine, to reverse use negative value.
  * @param brake The brake, which should be applied. Will override throttle
  */
 void RcCar::setEngine(double throttle, double brake) {
 
-	double b = brake;
-	
-	/* The actually executed engine speed */
-	double cmd = 0;
+	if(!lockEngine) {
 
-	/* Check if breake value is not positive */
-	if (b < 0) {
-		/* Make it positive */
-		b = -b;
-	}
+		double b = brake;
+		
+		/* The actually executed engine speed */
+		double cmd = 0;
 
-	/* determine engine state */
-	switch (currentEngineState) {
-		case state_FORWARD:
-			if (b > 0) {	//braking?
-				cmd = -1 * b;
-				manageBrakeTimer(true);
-			} else {	//not braking
-				/* Check for state change */
-				if(throttle <= 0) {	//reverse or neutral?
-					/* Apply reversing timeout */
-					if (checkReversingTimeout()) { //reversing timeout elapsed?
-						/* Change to corresponding engine state */
-						if (throttle < 0) {	//change to reverse
-							motorController->setServo(engineID, 0, 0, false);
-							usleep(1000000);
+		/* Check if breake value is not positive */
+		if (b < 0) {
+			/* Make it positive */
+			b = -b;
+		}
 
-							currentEngineState=state_REVERSE;
-							cmd = throttle;
-						} else {	//change to neutral
-							currentEngineState = state_NEUTRAL;
-							cmd = throttle;
+		/* determine engine state */
+		switch (currentEngineState) {
+			case state_FORWARD:
+				if (b > 0) {	//braking?
+					cmd = -1 * b;
+					manageBrakeTimer(true);
+				} else {	//not braking
+					/* Check for state change */
+					if(throttle <= 0) {	//reverse or neutral?
+						/* Apply reversing timeout */
+						if (checkReversingTimeout()) { //reversing timeout elapsed?
+							/* Change to corresponding engine state */
+							if (throttle < 0) {	//change to reverse
+								cmd = 0;
+								lockEngine = true;
+								reverseSwitchTimer.start();
+
+							} else {	//change to neutral
+								currentEngineState = state_NEUTRAL;
+								cmd = throttle;
+							}
+							manageBrakeTimer(false);
+						} else { //reversing timeout not elapsed - brake
+							cmd = -1;
+							manageBrakeTimer(true);
 						}
-						manageBrakeTimer(false);
-					} else { //reversing timeout not elapsed - brake
-						cmd = -1;
-						manageBrakeTimer(true);
-					}
-				} else {	//no state change - forward
-					cmd = throttle;
-					manageBrakeTimer(false);
-				}
-			}
-			break;
-
-		case state_NEUTRAL:
-			if (b > 0) {	//braking?
-				cmd = 0;
-				manageBrakeTimer(true);
-			} else {	//not braking
-				/* Check for state change */
-				if (throttle > 0) {	//forward?
-					currentEngineState = state_FORWARD;
-				} else if (throttle < 0) { //reverse?
-					currentEngineState = state_REVERSE;
-				}
-
-				cmd = throttle;
-				manageBrakeTimer(false);
-			}
-			break;
-
-		case state_REVERSE:
-			if (b > 0) {	//braking?
-				cmd = 0;
-				manageBrakeTimer(true);
-			} else {	//not braking
-				/* Check for state change */
-				if (throttle >= 0) {	//forward or neutral?
-					/* Apply reversing timeout proactivly to protect the gearbox */
-					if (checkReversingTimeout()) {	//reversing timeout elapsed?
-						/* Change to corresponding engine state */
-						currentEngineState = (throttle > 0) ? state_FORWARD : state_NEUTRAL;
-
+					} else {	//no state change - forward
 						cmd = throttle;
 						manageBrakeTimer(false);
-					} else {	//reversing timeout not elapsed - brake
-						cmd = 0.01;
-						manageBrakeTimer(true);
 					}
-				} else { //no state change - reverse
+				}
+				break;
+
+			case state_NEUTRAL:
+				if (b > 0) {	//braking?
+					cmd = 0;
+					manageBrakeTimer(true);
+				} else {	//not braking
+					/* Check for state change */
+					if (throttle > 0) {	//forward?
+						currentEngineState = state_FORWARD;
+					} else if (throttle < 0) { //reverse?
+						currentEngineState = state_REVERSE;
+					}
+
 					cmd = throttle;
 					manageBrakeTimer(false);
 				}
-			}
-			break;
-	}
+				break;
 
-	motorController->setServo(engineID, 1000 * cmd, 0, false);
+			case state_REVERSE:
+				if (b > 0) {	//braking?
+					cmd = 0;
+					manageBrakeTimer(true);
+				} else {	//not braking
+					/* Check for state change */
+					if (throttle >= 0) {	//forward or neutral?
+						/* Apply reversing timeout proactivly to protect the gearbox */
+						if (checkReversingTimeout()) {	//reversing timeout elapsed?
+							/* Change to corresponding engine state */
+							currentEngineState = (throttle > 0) ? state_FORWARD : state_NEUTRAL;
+
+							cmd = throttle;
+							manageBrakeTimer(false);
+						} else {	//reversing timeout not elapsed - brake
+							cmd = 0.01;
+							manageBrakeTimer(true);
+						}
+					} else { //no state change - reverse
+						cmd = throttle;
+						manageBrakeTimer(false);
+					}
+				}
+				break;
+		}
+
+		motorController->setServo(engineID, 1000 * cmd, 0, false);
+	}
 }
 
 /**

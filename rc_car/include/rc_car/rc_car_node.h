@@ -104,6 +104,12 @@ private:
 	/** Time at which braking was executed, will be 0 if not breaking **/
 	ros::Time brakePushedAt;
 
+	/** Timer used to switch the engines ESC in reverse Mode **/
+	ros::Timer reverseSwitchTimer;
+
+	/** Used to lock engine changes **/
+	bool lockEngine;
+
 	/**
 	 * Sets the steering to the given position.
 	 * @param angle The steering angle in percent of the full lock. Positive values are interpreted as right.
@@ -136,4 +142,10 @@ private:
 	 * @return true if the reversing timeout is elapsed, false if not.
 	 */
 	bool checkReversingTimeout();
+
+	/**
+	 * Switches the ESC to Reverse Mode
+	 * @param e The Timer Event.
+	 */
+	void switchToReverseTimerCallback(const ros::TimerEvent& e);
 };

@@ -5,5 +5,6 @@
     <param name="steering_servo_right_limit" value="775" />    
     <param name="steering_servo_left_limit" value="475" />
     <param name="reversing_timeout" value="2.0" />
+    <param name="esc_reverse_mode_timeout" value="0.094" />
   </node>
 </launch>
