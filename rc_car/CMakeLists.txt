@@ -79,7 +79,7 @@ catkin_package(
 	INCLUDE_DIRS include
 #  LIBRARIES rccar_drive
 	CATKIN_DEPENDS geometry_msgs roscpp tf sensor_msgs
-#  DEPENDS system_lib
+  DEPENDS bcm2835
 )
 
 ###########
@@ -100,6 +100,7 @@ include_directories(include
 ## Declare a cpp executable
 add_executable(rc_car_node src/rc_car_node.cpp src/chroma_rpi_servoboard.cpp)
 add_executable(joystick_control_node src/joystick_control_node.cpp)
+add_executable(rc_car_lights_node src/rc_car_lights_node.cpp src/tlc59711.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -110,6 +111,7 @@ target_link_libraries(rc_car_node
 	${catkin_LIBRARIES}
 )
 target_link_libraries(joystick_control_node ${catkin_LIBRARIES})
+target_link_libraries(rc_car_lights_node ${catkin_LIBRARIES} bcm2835)
 
 #############
 ## Install ##

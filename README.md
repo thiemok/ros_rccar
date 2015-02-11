@@ -2,9 +2,13 @@ ros_rccar
 =========
 An RC Car based on ROS indigo and the Raspberry Pi.
 
-The Project uses the Raspberry Pi Servo board v3, which is available here http://electronics.chroma.se/
+###Requirements
+* bcm2835 library , available at http://www.airspayce.com/mikem/bcm2835/
+* The Raspberry Pi Servo board v3 for motor control, which is available here http://electronics.chroma.se/
+* Adafruit's TLC59711 for lighting
 
-Currently driving is possible via ros *geometry_msgs/Twist* to *rc_car/cmd_vel* or via joystick using *joystick_control_node*.  
+Currently driving is possible via ros *geometry_msgs/Twist* to *rc_car/cmd_vel* or via joystick using *joystick_control_node*.
+**Using the rc_car_lights_node requires sudo. The launch files are prepared for this, but you need to configure your environment to keep required environment variables when using sudo**  
 
 ### Control via rc_car/cmd_vel
 Use linear.x for throttle (to drive in reverse use negative values), linear.y is used for braking and angular.z for steering.

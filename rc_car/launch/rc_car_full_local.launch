@@ -1,0 +1,8 @@
+<launch>
+
+  <!-- Minimal components -->
+  <include file="$(find rc_car)/launch/rc_car_minimal_local.launch"/>
+  
+  <node pkg="rc_car" type="rc_car_lights_node" name="rc_car_lights_node" launch-prefix="sudo"/>
+  
+</launch>

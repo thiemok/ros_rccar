@@ -1,0 +1,7 @@
+<launch>
+	
+  <include file="$(find rc_car)/launch/joystick_control_node.launch"/>
+
+  <node pkg="rc_car" type="rc_car_lights_node" name="rc_car_lights_node" launch-prefix="sudo" output="screen"/>
+
+</launch>
