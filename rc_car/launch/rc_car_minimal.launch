@@ -1,0 +1,6 @@
+<launch>
+
+	<!-- Motor Controller -->
+	<include file="$(find rc_car)/launch/rc_car_node.launch"/>
+
+</launch>

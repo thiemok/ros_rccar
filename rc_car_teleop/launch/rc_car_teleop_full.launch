@@ -1,0 +1,9 @@
+<launch>
+
+	<!-- Joystick Control -->
+  	<include file="$(find rc_car_teleop)/launch/joystick_control_node.launch"/>
+
+  	<!-- Camera View -->
+	<include file"$(find rc_car_teleop)/launch/camera_view.launch"/>  	
+
+</launch>
